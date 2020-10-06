@@ -1,6 +1,8 @@
 import os
+import json
 from dotenv import load_dotenv
 import psycopg2
+from psycopg2.extras import execute_values
 
 load_dotenv()
 
@@ -25,19 +27,33 @@ cursor.execute('SELECT * from test_table;')
 result = cursor.fetchall()
 print(result)
 
-insertion_sql = '''
-INSERT INTO test_table (name, data) VALUES
-(
-  'A row name',
-  null
-),
-(
-  'Another row, with JSON',
-  '{ "a": 1, "b": ["dog", "cat", 42], "c": true }'::JSONB
-);
-'''
+# insertion_sql = '''
+# INSERT INTO test_table (name, data) VALUES
+# (
+#   'A row name',
+#   null
+# ),
+# (
+#   'Another row, with JSON',
+#   '{ "a": 1, "b": ["dog", "cat", 42], "c": true }'::JSONB
+# );
+# '''
 
-cursor.execute(insertion_sql)
+my_dict = {'a': 1, 'b': ['dog', 'cat', 42], 'c': 'true'}
+# insertion_query = 'INSERT INTO test_table (name, data) VALUES (%s, %s)'
+# cursor.execute(insertion_query,
+#     ('A rowwww', 'null')
+# )
+# cursor.execute(insertion_query,
+#     ('Another row, with JSONNNN', json.dumps(my_dict))    
+# )
+
+insertion_query = 'INSERT INTO test_table (name, data) VALUES %s'
+execute_values(cursor, insertion_query, [
+    ('A rowwww', 'null'),
+    ('Another row, with JSONNNN', json.dumps(my_dict)),
+    ('Third row', '3')
+])
 
 # ACTUALLY SAVE THE TRANSACTIONS
 connection.commit()
